@@ -56,6 +56,10 @@ def sync_orm_main():
     SyncOrm.select_workers_condition_relationship()
     SyncOrm.select_workers_condition_relationship_contains_eager()
     SyncOrm.select_workers_relationship_contains_eager_with_limit()
+    # DTO
+    SyncOrm.convert_workers_to_dto()
+    SyncOrm.convert_workers_to_dto_with_rel()
+    SyncOrm.convert_workers_to_dto_with_dto_join()
 
 
 async def async_orm_main():
@@ -78,6 +82,10 @@ async def async_orm_main():
     await AsyncOrm.select_workers_condition_relationship()
     await AsyncOrm.select_workers_condition_relationship_contains_eager()
     await AsyncOrm.select_workers_relationship_contains_eager_with_limit()
+    # DTO
+    await AsyncOrm.convert_workers_to_dto()
+    await AsyncOrm.convert_workers_to_dto_with_rel()
+    await AsyncOrm.convert_workers_to_dto_with_dto_join()
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from sqlalchemy.orm import aliased, contains_eager, joinedload, selectinload
 from db import Base
 from db.engine import async_engine, async_session_factory
 from db.models import ResumesOrm, WorkersOrm, Workload
+from schemas import WorkersDTO, WorkersRelDTO, WorkloadAvgCompensationDTO
 
 
 class AsyncOrm:
@@ -400,3 +401,78 @@ class AsyncOrm:
 
             worker_2_resumes = workers[1].resumes
             print(f"{worker_2_resumes=}")
+
+    ################################### DTO ###################################
+
+    @staticmethod
+    async def convert_workers_to_dto():
+        """Воркеры (pydantic модель)"""
+        async with async_session_factory() as session:
+            print()
+
+            query = select(WorkersOrm).order_by(WorkersOrm.id).limit(3)
+            res = await session.execute(query)
+            workers_orm = res.scalars().all()
+            print(f"{workers_orm=}")
+
+            # приведение данных к pydantic модели
+            workers_dto = [
+                WorkersDTO.model_validate(row, from_attributes=True)
+                for row in workers_orm
+            ]
+            # from_attributes=True - для orm объектов (обращение к атрибутам через точку),
+            # а не по ключам словаря
+            print(f"{workers_dto=}")
+
+    @staticmethod
+    async def convert_workers_to_dto_with_rel():
+        """Воркеры с вложенными резюме (pydantic модель)"""
+        async with async_session_factory() as session:
+            print()
+
+            query = (
+                select(WorkersOrm)
+                .order_by(WorkersOrm.id)
+                .options(selectinload(WorkersOrm.resumes))
+                .limit(3)
+            )
+            res = await session.execute(query)
+            workers_orm = res.scalars().all()
+            print(f"{workers_orm=}")
+
+            workers_dto = [
+                WorkersRelDTO.model_validate(row, from_attributes=True)
+                for row in workers_orm
+            ]
+            print(f"{workers_dto=}")
+
+    @staticmethod
+    async def convert_workers_to_dto_with_dto_join(like_language: str = "Python"):
+        """Старый запрос select_resumes_avg_compensation приведенный к pydantic модели"""
+        async with async_session_factory() as session:
+            print()
+            query = (
+                select(
+                    ResumesOrm.workload,
+                    func.avg(ResumesOrm.compensation)
+                    .cast(Integer)
+                    .label("avg_compensation"),
+                )
+                .select_from(ResumesOrm)
+                .filter(
+                    and_(
+                        ResumesOrm.title.contains(like_language),
+                        ResumesOrm.compensation > 40000,
+                    )
+                )
+                .group_by(ResumesOrm.workload)
+                .having(func.avg(ResumesOrm.compensation) > 70000)
+            )
+            res = await session.execute(query)
+            result_orm = res.all()
+            print(f"{result_orm=}")
+            result_dto = [
+                WorkloadAvgCompensationDTO.model_validate(row, from_attributes=True)
+                for row in result_orm
+            ]
+            print(f"{result_dto=}")
