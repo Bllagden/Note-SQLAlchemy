@@ -312,3 +312,91 @@ class AsyncOrm:
                 print(f"{worker.resumes=}")
             else:
                 print("worker not found")
+
+    ##########################################################################
+
+    @staticmethod
+    async def select_workers_condition_relationship():
+        """Выбор всех воркеров и их резюме (резюме только с parttime).
+        WorkersOrm.resumes_parttime (primaryjoin).
+        """
+        async with async_session_factory() as session:
+            print()
+
+            query = (
+                select(WorkersOrm)
+                .order_by(WorkersOrm.id)
+                .options(selectinload(WorkersOrm.resumes_parttime))
+            )
+            res = await session.execute(query)
+            workers = res.scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes_parttime
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes_parttime
+            print(f"{worker_2_resumes=}")
+
+    @staticmethod
+    async def select_workers_condition_relationship_contains_eager():
+        """Eager загрузка.
+        Возвращает только тех воркеров, у которых есть рюзюме с parttime.
+        Делает один запрос."""
+        async with async_session_factory() as session:
+            print()
+            # Такой запрос невозможен в асинхронном режиме, ведь при нем в этом моменте
+            # ( worker_1_resumes = workers[0].resumes_parttime )
+            # происходит дополнительный запрос, что в async режиме приводит к ошибке.
+            #
+            # query = (
+            #     select(WorkersOrm)
+            #     .join(WorkersOrm.resumes)
+            #     .options(contains_eager(WorkersOrm.resumes))
+            #     .filter(ResumesOrm.workload == "parttime")
+            # )
+            query = (
+                select(WorkersOrm)
+                .join(WorkersOrm.resumes_parttime)
+                .options(contains_eager(WorkersOrm.resumes_parttime))
+            )
+
+            res = await session.execute(query)
+            workers = res.unique().scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes_parttime
+            print(f"{worker_1_resumes=}")
+
+    @staticmethod
+    async def select_workers_relationship_contains_eager_with_limit():
+        """Eager загрузка с лимитом выдачи.
+        Возвращает всех воркеров и определенное количество резюме у каждого.
+        https://stackoverflow.com/a/72298903/22259413
+        """
+        async with async_session_factory() as session:
+            print()
+            subq = (
+                select(ResumesOrm.id.label("resume_id"))
+                .filter(ResumesOrm.worker_id == WorkersOrm.id)
+                .limit(1)  # количество резюме у каждого воркера
+                .scalar_subquery()
+                .correlate(WorkersOrm)
+            )
+
+            query = (
+                select(WorkersOrm)
+                .order_by(WorkersOrm.id)
+                .join(ResumesOrm, ResumesOrm.id.in_(subq))
+                .options(contains_eager(WorkersOrm.resumes))
+            )
+
+            res = await session.execute(query)
+            workers = res.unique().scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes
+            print(f"{worker_2_resumes=}")

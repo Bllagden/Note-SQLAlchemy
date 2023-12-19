@@ -52,6 +52,10 @@ def sync_orm_main():
     SyncOrm.select_workers_joined_relationship()
     SyncOrm.select_workers_selectin_relationship()
     SyncOrm.select_worker_selectin_relationship()
+    #
+    SyncOrm.select_workers_condition_relationship()
+    SyncOrm.select_workers_condition_relationship_contains_eager()
+    SyncOrm.select_workers_relationship_contains_eager_with_limit()
 
 
 async def async_orm_main():
@@ -70,6 +74,10 @@ async def async_orm_main():
     await AsyncOrm.select_workers_joined_relationship()
     await AsyncOrm.select_workers_selectin_relationship()
     await AsyncOrm.select_worker_selectin_relationship()
+    #
+    await AsyncOrm.select_workers_condition_relationship()
+    await AsyncOrm.select_workers_condition_relationship_contains_eager()
+    await AsyncOrm.select_workers_relationship_contains_eager_with_limit()
 
 
 if __name__ == "__main__":

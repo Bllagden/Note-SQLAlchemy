@@ -329,3 +329,84 @@ class SyncOrm:
                 print(f"{worker.resumes=}")
             else:
                 print("worker not found")
+
+    ##########################################################################
+
+    @staticmethod
+    def select_workers_condition_relationship():
+        """Выбор всех воркеров и их резюме (резюме только с parttime).
+        WorkersOrm.resumes_parttime (primaryjoin).
+        """
+        with session_factory() as session:
+            print()
+
+            query = (
+                select(WorkersOrm)
+                .order_by(WorkersOrm.id)
+                .options(selectinload(WorkersOrm.resumes_parttime))
+            )
+            res = session.execute(query)
+            workers = res.scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes_parttime
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes_parttime
+            print(f"{worker_2_resumes=}")
+
+    @staticmethod
+    def select_workers_condition_relationship_contains_eager():
+        """Eager загрузка.
+        Возвращает только тех воркеров, у которых есть рюзюме с parttime.
+        При текущем варианте, делает два запроса. Но вообще предназначена делать один.
+        Реализовано в асинхронном варианте функции.
+        """
+        with session_factory() as session:
+            print()
+            query = (
+                select(WorkersOrm)
+                .join(WorkersOrm.resumes)
+                .options(contains_eager(WorkersOrm.resumes))
+                .filter(ResumesOrm.workload == "parttime")
+            )
+
+            res = session.execute(query)
+            workers = res.unique().scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes_parttime
+            print(f"{worker_1_resumes=}")
+
+    @staticmethod
+    def select_workers_relationship_contains_eager_with_limit():
+        """Eager загрузка с лимитом выдачи.
+        Возвращает всех воркеров и определенное количество резюме у каждого.
+        https://stackoverflow.com/a/72298903/22259413
+        """
+        with session_factory() as session:
+            print()
+            subq = (
+                select(ResumesOrm.id.label("resume_id"))
+                .filter(ResumesOrm.worker_id == WorkersOrm.id)
+                .limit(1)  # количество резюме у каждого воркера
+                .scalar_subquery()
+                .correlate(WorkersOrm)
+            )
+
+            query = (
+                select(WorkersOrm)
+                .order_by(WorkersOrm.id)
+                .join(ResumesOrm, ResumesOrm.id.in_(subq))
+                .options(contains_eager(WorkersOrm.resumes))
+            )
+
+            res = session.execute(query)
+            workers = res.unique().scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes
+            print(f"{worker_2_resumes=}")
