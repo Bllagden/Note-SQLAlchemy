@@ -57,3 +57,34 @@ class WorkloadAvgCompensationDTO(BaseModel):
 
         #    from_attributes = True
         pass
+
+
+################################### M_to_M ###################################
+
+
+class VacanciesAddDTO(BaseModel):
+    title: str
+    compensation: Optional[int]
+
+
+class VacanciesDTO(VacanciesAddDTO):
+    id: int
+
+
+class VacanciesWithoutCompensationDTO(BaseModel):
+    id: int
+    title: str
+
+
+class ResumesRelVacanciesRepliedDTO(ResumesDTO):
+    """Если использовать в методе select_resumes_with_all_relationships
+    данную схему вместо ResumesRelVacanciesRepliedWithoutVacancyCompensationDTO.
+    То столбец compensation будет вызван Алхимией через ленивую загрузку."""
+
+    worker: "WorkersDTO"
+    vacancies_replied: list["VacanciesDTO"]
+
+
+class ResumesRelVacanciesRepliedWithoutVacancyCompensationDTO(ResumesDTO):
+    worker: "WorkersDTO"
+    vacancies_replied: list["VacanciesWithoutCompensationDTO"]

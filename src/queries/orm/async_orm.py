@@ -3,8 +3,13 @@ from sqlalchemy.orm import aliased, contains_eager, joinedload, selectinload
 
 from db import Base
 from db.engine import async_engine, async_session_factory
-from db.models import ResumesOrm, WorkersOrm, Workload
-from schemas import WorkersDTO, WorkersRelDTO, WorkloadAvgCompensationDTO
+from db.models import ResumesOrm, VacanciesOrm, WorkersOrm, Workload
+from schemas import (
+    ResumesRelVacanciesRepliedWithoutVacancyCompensationDTO,
+    WorkersDTO,
+    WorkersRelDTO,
+    WorkloadAvgCompensationDTO,
+)
 
 
 class AsyncOrm:
@@ -42,7 +47,7 @@ class AsyncOrm:
             print(f"{workers=}")
 
     @staticmethod
-    async def update_worker_1(worker_id: int = 1, new_username: str = "UPDATE_ORM_AAA"):
+    async def update_worker_1(worker_id: int = 1, new_username: str = "UPDATE_OR_AAA"):
         """Через session.get - два запроса (получаем и обновляем объект).
         Через CORE один запрос (UPDATE)"""
         async with async_session_factory() as session:
@@ -476,3 +481,56 @@ class AsyncOrm:
                 for row in result_orm
             ]
             print(f"{result_dto=}")
+
+        ################################### M_to_M ###################################
+
+    @staticmethod
+    async def add_vacancies_and_replies():
+        async with async_session_factory() as session:
+            print()
+            new_vacancy = VacanciesOrm(title="Python разработчик", compensation=100000)
+
+            get_resume_1 = (
+                select(ResumesOrm)
+                .options(selectinload(ResumesOrm.vacancies_replied))
+                .filter_by(id=1)
+            )
+            get_resume_2 = (
+                select(ResumesOrm)
+                .options(selectinload(ResumesOrm.vacancies_replied))
+                .filter_by(id=2)
+            )
+            resume_1 = (await session.execute(get_resume_1)).scalar_one()
+            resume_2 = (await session.execute(get_resume_2)).scalar_one()
+            resume_1.vacancies_replied.append(new_vacancy)
+            resume_2.vacancies_replied.append(new_vacancy)
+
+            await session.commit()
+
+    @staticmethod
+    async def select_resumes_with_all_relationships():
+        """Выбор всех резюме с вложенными данными (воркер этого рюзюме и вакансии)"""
+        async with async_session_factory() as session:
+            print()
+            query = (
+                select(ResumesOrm)
+                .options(joinedload(ResumesOrm.worker))  # m_to_1
+                .options(  #                               m_to_m
+                    selectinload(ResumesOrm.vacancies_replied).load_only(
+                        VacanciesOrm.title
+                    )
+                )
+            )
+
+            res = await session.execute(query)
+            result_orm = res.unique().scalars().all()
+            print(f"{result_orm=}")
+
+            result_dto = [
+                ResumesRelVacanciesRepliedWithoutVacancyCompensationDTO.model_validate(
+                    row, from_attributes=True
+                )
+                for row in result_orm
+            ]
+            print(f"{result_dto=}")
+            return result_dto

@@ -60,6 +60,9 @@ def sync_orm_main():
     SyncOrm.convert_workers_to_dto()
     SyncOrm.convert_workers_to_dto_with_rel()
     SyncOrm.convert_workers_to_dto_with_dto_join()
+    # M_to_M
+    SyncOrm.add_vacancies_and_replies()
+    SyncOrm.select_resumes_with_all_relationships()
 
 
 async def async_orm_main():
@@ -86,6 +89,9 @@ async def async_orm_main():
     await AsyncOrm.convert_workers_to_dto()
     await AsyncOrm.convert_workers_to_dto_with_rel()
     await AsyncOrm.convert_workers_to_dto_with_dto_join()
+    # M_to_M
+    await AsyncOrm.add_vacancies_and_replies()
+    await AsyncOrm.select_resumes_with_all_relationships()
 
 
 if __name__ == "__main__":

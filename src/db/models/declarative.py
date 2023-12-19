@@ -52,8 +52,45 @@ class ResumesOrm(Base):
         back_populates="resumes",
     )
 
+    # m_to_m через VacanciesRepliesOrm
+    vacancies_replied: Mapped[list["VacanciesOrm"]] = relationship(
+        back_populates="resumes_replied",
+        secondary="vacancies_replies",
+    )
+
     # primary_keys, foreign_keys, indexes, constraints
     __table_args__ = (
         Index("title_index", "title"),
         CheckConstraint("compensation > 0", name="check_compensation_positive"),
     )
+
+
+#################################### VacanciesOrm ####################################
+class VacanciesOrm(Base):
+    __tablename__ = "vacancies"
+
+    id: Mapped[int_pk]
+    title: Mapped[str_255]
+    compensation: Mapped[int | None]
+
+    # m_to_m через VacanciesRepliesOrm
+    resumes_replied: Mapped[list["ResumesOrm"]] = relationship(
+        back_populates="vacancies_replied",
+        secondary="vacancies_replies",
+    )
+
+
+####################################### M_to_M #######################################
+class VacanciesRepliesOrm(Base):
+    __tablename__ = "vacancies_replies"
+
+    resume_id: Mapped[int] = mapped_column(
+        ForeignKey("resumes.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    vacancy_id: Mapped[int] = mapped_column(
+        ForeignKey("vacancies.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+
+    cover_letter: Mapped[str | None]

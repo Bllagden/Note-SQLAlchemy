@@ -3,8 +3,13 @@ from sqlalchemy.orm import aliased, contains_eager, joinedload, selectinload
 
 from db import Base
 from db.engine import engine, session_factory
-from db.models import ResumesOrm, WorkersOrm, Workload
-from schemas import WorkersDTO, WorkersRelDTO, WorkloadAvgCompensationDTO
+from db.models import ResumesOrm, VacanciesOrm, WorkersOrm, Workload
+from schemas import (
+    ResumesRelVacanciesRepliedWithoutVacancyCompensationDTO,
+    WorkersDTO,
+    WorkersRelDTO,
+    WorkloadAvgCompensationDTO,
+)
 
 
 class SyncOrm:
@@ -487,3 +492,54 @@ class SyncOrm:
                 for row in result_orm
             ]
             print(f"{result_dto=}")
+
+    ################################### M_to_M ###################################
+
+    @staticmethod
+    def add_vacancies_and_replies():
+        with session_factory() as session:
+            print()
+            new_vacancy = VacanciesOrm(title="Python разработчик", compensation=100000)
+
+            # query = select(ResumesOrm).filter_by(id=1)
+            # res = session.execute(query)
+            # resume_1 = res.scalars().first()  # db.models.declarative.ResumesOrm
+            # or
+            resume_1 = session.get(ResumesOrm, 1)  # db.models.declarative.ResumesOrm
+            resume_2 = session.get(ResumesOrm, 2)
+
+            # insert
+            if resume_1 is not None:
+                resume_1.vacancies_replied.append(new_vacancy)
+            if resume_2 is not None:
+                resume_2.vacancies_replied.append(new_vacancy)
+
+            session.commit()
+
+    @staticmethod
+    def select_resumes_with_all_relationships():
+        """Выбор всех резюме с вложенными данными (воркер этого рюзюме и вакансии)"""
+        with session_factory() as session:
+            print()
+            query = (
+                select(ResumesOrm)
+                .options(joinedload(ResumesOrm.worker))  # m_to_1
+                .options(  #                               m_to_m
+                    selectinload(ResumesOrm.vacancies_replied).load_only(
+                        VacanciesOrm.title
+                    )
+                )
+            )
+
+            res = session.execute(query)
+            result_orm = res.unique().scalars().all()
+            print(f"{result_orm=}")
+
+            result_dto = [
+                ResumesRelVacanciesRepliedWithoutVacancyCompensationDTO.model_validate(
+                    row, from_attributes=True
+                )
+                for row in result_orm
+            ]
+            print(f"{result_dto=}")
+            return result_dto
