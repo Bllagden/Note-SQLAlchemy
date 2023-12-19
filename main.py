@@ -15,6 +15,8 @@ def sync_core_main():
     SyncCore.create_tables()
     SyncCore.insert_workers(["AAA", "BBB"])
     SyncCore.select_workers()
+    SyncCore.update_worker_1()
+    SyncCore.update_worker_2()
 
 
 async def async_core_main():
@@ -23,6 +25,8 @@ async def async_core_main():
     await AsyncCore.create_tables()
     await AsyncCore.insert_workers(["AAA", "BBB"])
     await AsyncCore.select_workers()
+    await AsyncCore.update_worker_1()
+    await AsyncCore.update_worker_2()
 
 
 def sync_orm_main():
@@ -31,6 +35,7 @@ def sync_orm_main():
     SyncOrm.create_tables()
     SyncOrm.insert_workers(["AAA", "BBB"])
     SyncOrm.select_workers()
+    SyncOrm.update_worker_1()
 
 
 async def async_orm_main():
@@ -39,6 +44,7 @@ async def async_orm_main():
     await AsyncOrm.create_tables()
     await AsyncOrm.insert_workers(["AAA", "BBB"])
     await AsyncOrm.select_workers()
+    await AsyncOrm.update_worker_1()
 
 
 if __name__ == "__main__":

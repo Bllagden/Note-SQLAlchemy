@@ -40,3 +40,13 @@ class SyncOrm:
             # workers = res.all()  # list[tuple[IterOrm]]
             workers = res.scalars().all()  # list[IterOrm]
             print(f"{workers=}")
+
+    @staticmethod
+    def update_worker_1(worker_id: int = 1, new_username: str = "UPDATE_ORM_AAA"):
+        """Через session.get - два запроса (получаем и обновляем объект).
+        Через CORE один запрос (UPDATE)"""
+        with session_factory() as session:
+            print()
+            worker = session.get(WorkersOrm, worker_id)
+            worker.username = new_username  # type: ignore
+            session.commit()

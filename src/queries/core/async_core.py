@@ -44,3 +44,25 @@ class AsyncCore:
             res = await conn.execute(query)
             workers = res.all()
             print(f"{workers=}")  # [(1, 'AAA'), (2, 'BBB')]
+
+    @staticmethod
+    async def update_worker_1(worker_id: int = 1, new_username: str = "UPDATE_CR_AAA"):
+        """Без SQL-инъекций (bindparams)"""
+        async with async_engine.connect() as conn:
+            print()
+            stmt = text("UPDATE workers SET username=:username WHERE id=:id")
+            stmt = stmt.bindparams(username=new_username, id=worker_id)
+            await conn.execute(stmt)
+            await conn.commit()
+
+    @staticmethod
+    async def update_worker_2(worker_id: int = 2, new_username: str = "UPDATE_CR_BBB"):
+        async with async_engine.connect() as conn:
+            print()
+            stmt = (
+                update(workers_tab)
+                .values(username=new_username)
+                .filter_by(id=worker_id)  # .where(workers_tab.c.id == worker_id)
+            )
+            await conn.execute(stmt)
+            await conn.commit()
