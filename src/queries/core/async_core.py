@@ -1,5 +1,7 @@
 from sqlalchemy import Integer, and_, func, insert, select, text, update
+from sqlalchemy.exc import DBAPIError
 
+from db import Base
 from db.engine import async_engine
 from db.models import Workload, metadata_imp, resumes_tab, workers_tab
 
@@ -14,10 +16,20 @@ class AsyncCore:
 
     @staticmethod
     async def delete_tables():
-        async with async_engine.begin() as conn:
-            async_engine.echo = False
-            await conn.run_sync(metadata_imp.drop_all)
-            async_engine.echo = True
+        """ORM-запросы создают зависимости в БД, поэтому приходится удалять их через Base"""
+        print()
+        # async_engine.echo = False
+        try:
+            async with async_engine.begin() as conn:
+                await conn.run_sync(metadata_imp.drop_all)
+
+        except DBAPIError as e:
+            async with async_engine.begin() as conn:
+                if "DependentObjectsStillExistError" in str(e):  #  exc from asyncpg
+                    await conn.run_sync(Base.metadata.drop_all)
+                else:
+                    raise e
+        # async_engine.echo = True
 
     @staticmethod
     async def create_tables():

@@ -1,5 +1,7 @@
 from sqlalchemy import Integer, and_, func, insert, select, text, update
+from sqlalchemy.exc import InternalError
 
+from db import Base
 from db.engine import engine
 from db.models import Workload, metadata_imp, resumes_tab, workers_tab
 
@@ -14,9 +16,17 @@ class SyncCore:
 
     @staticmethod
     def delete_tables():
-        engine.echo = False
-        metadata_imp.drop_all(engine)
-        engine.echo = True
+        """ORM-запросы создают зависимости в БД, поэтому приходится удалять их через Base"""
+        print()
+        # engine.echo = False
+        try:
+            metadata_imp.drop_all(engine)
+        except InternalError as e:
+            if "DependentObjectsStillExist" in str(e):  #  exc from psycopg
+                Base.metadata.drop_all(engine)
+            else:
+                raise e
+        # engine.echo = True
 
     @staticmethod
     def create_tables():
