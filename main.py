@@ -2,6 +2,10 @@ import asyncio
 import os
 import sys
 
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 sys.path.insert(1, os.path.join(sys.path[0], "src"))
 # C:\GLOBAL_PATH_TO_PROJECT\root\src   (добавление src в список путей на 2 место)
 # for i in sys.path: print(i)
@@ -94,6 +98,37 @@ async def async_orm_main():
     await AsyncOrm.select_resumes_with_all_relationships()
 
 
+def create_fastapi_app():
+    app = FastAPI(title="FastAPI")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+    )
+
+    @app.get("/workers", tags=["Кандидат"])
+    async def get_workers():
+        workers = SyncOrm.convert_workers_to_dto_with_rel()
+        return workers
+
+    @app.get("/resumes", tags=["Резюме"])
+    async def get_resumes():
+        resumes = await AsyncOrm.select_resumes_with_all_relationships()
+        return resumes
+
+    return app
+
+
+app = create_fastapi_app()
+
+
+def uvicorn_run():
+    print()
+    uvicorn.run(
+        app="main:app",
+        reload=True,
+    )
+
+
 if __name__ == "__main__":
     """python main.py --sync --orm"""
     if "--sync" in sys.argv and "--core" in sys.argv:
@@ -104,3 +139,6 @@ if __name__ == "__main__":
         sync_orm_main()
     elif "--async" in sys.argv and "--orm" in sys.argv:
         asyncio.run(async_orm_main())
+
+    if "--webserver" in sys.argv:
+        uvicorn_run()
