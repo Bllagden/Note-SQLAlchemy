@@ -1,0 +1,19 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Bllagden", email = "bllagden99@gmail.com"},
+]
+dependencies = [
+    "sqlalchemy>=2.0.23",
+    "asyncpg>=0.29.0",
+    "psycopg[binary,pool]>=3.1.16",
+    "pydantic>=2.5.2",
+    "pydantic-settings>=2.1.0",
+    "fastapi[uvicorn]>=0.105.0",
+    "uvicorn>=0.24.0.post1",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
