@@ -191,3 +191,5 @@ class SyncCore:
             conn.execute(insert_workers)
             conn.execute(insert_resumes)
             conn.commit()
+
+    # Relationships отсутствуют при использовании Table

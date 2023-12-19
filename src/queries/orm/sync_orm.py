@@ -230,3 +230,102 @@ class SyncOrm:
             result = res.all()
             print()
             print(f"{len(result)=}\n{result=}")
+
+    ############################### RELATIONSHIP ###############################
+    # Для каких связей типы загрузок
+    # joinedload    : m_to_1,    1_to_1
+    # selectinload  : 1_to_m,    m_to_m
+
+    @staticmethod
+    def select_workers_lazy_relationship():
+        """lazy (ленивая) загрузка (дефолт).
+        Работает только в синхронном режиме.
+        Сначала делается запрос для выборки изначальных данных (воркеров).
+        Связанные данные (резюме воркеров) загружаются по запросу (workers[?].resumes).
+        Неэффективно, если все связанные данные нужно получить разом (будет n+1 запросов).
+        """
+        with session_factory() as session:
+            print()
+
+            query = select(WorkersOrm).order_by(WorkersOrm.id)  # desc(WorkersOrm.id)
+            res = session.execute(query)  # SELECT * FROM workers
+            workers = res.scalars().all()  # list[Orm[id=?, username=?]]
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes  # запрос всех резюме воркера с id=1
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes  # запрос всех резюме воркера с id=2
+            print(f"{worker_2_resumes=}")
+
+    @staticmethod
+    def select_workers_joined_relationship():
+        """joined загрузка.
+        К SELECT запросу добавляется JOIN для выборки связанных данных.
+        В результат попадают дубликаты (сколько резюме у воркера, столько и его дубликатов).
+        Алхимия будет ругаться на дубликаты первичных ключей, поэтому на уровне питона
+        их нужно удалить из результата методом unique().
+        Один большой запрос, вместо n+1 запросов в ленивой загрузке.
+        Слишком много лишних данных берется из БД из-за ДЖОЙНА (дубликаты).
+        """
+        with session_factory() as session:
+            print()
+
+            query = select(WorkersOrm).options(joinedload(WorkersOrm.resumes))
+            res = session.execute(query)  # SELECT с джойном
+            workers = res.unique().scalars().all()  # удаление дубликатов
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes  # здесь нет запроса
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes  # здесь нет запроса
+            print(f"{worker_2_resumes=}")
+
+    @staticmethod
+    def select_workers_selectin_relationship():
+        """selectin загрузка.
+        Два запроса:
+        первый - все воркеры; второй - все резюме выбранных воркеров.
+        Нет дубликатов воркеров.
+        """
+        with session_factory() as session:
+            print()
+
+            query = (
+                select(WorkersOrm)
+                .order_by(WorkersOrm.id)
+                .options(selectinload(WorkersOrm.resumes))
+            )
+            res = session.execute(query)
+            workers = res.scalars().all()
+            print(f"{workers=}")
+
+            worker_1_resumes = workers[0].resumes
+            print(f"{worker_1_resumes=}")
+
+            worker_2_resumes = workers[1].resumes
+            print(f"{worker_2_resumes=}")
+
+    @staticmethod
+    def select_worker_selectin_relationship(worker_id: int = 1):
+        with session_factory() as session:
+            print()
+            query = (
+                select(WorkersOrm)
+                .filter_by(id=worker_id)
+                .options(selectinload(WorkersOrm.resumes))
+            )
+            res = session.execute(query)
+            # type(res) = sqlalchemy.engine.result.ChunkedIteratorResult
+
+            # worker = res.scalars()  # sqlalchemy.engine.result.ScalarResult
+            # worker = res.scalars().all()  # list[db...WorkersOrm]
+            # worker = res.scalars().all()[0]  # db.models.declarative.WorkersOrm
+            worker = res.scalars().first()  # db.models.declarative.WorkersOrm | None
+
+            if worker:
+                print(f"{worker=}")
+                print(f"{worker.resumes=}")
+            else:
+                print("worker not found")

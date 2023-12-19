@@ -181,3 +181,5 @@ class AsyncCore:
             await conn.execute(insert_workers)
             await conn.execute(insert_resumes)
             await conn.commit()
+
+    # Relationships отсутствуют при использовании Table

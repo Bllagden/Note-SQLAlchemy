@@ -47,6 +47,11 @@ def sync_orm_main():
     SyncOrm.insert_additional_resumes()
     # end core
     SyncOrm.join_cte_subquery_window_func()
+    # relationship
+    SyncOrm.select_workers_lazy_relationship()
+    SyncOrm.select_workers_joined_relationship()
+    SyncOrm.select_workers_selectin_relationship()
+    SyncOrm.select_worker_selectin_relationship()
 
 
 async def async_orm_main():
@@ -61,6 +66,10 @@ async def async_orm_main():
     await AsyncOrm.insert_additional_resumes()
     # end core
     await AsyncOrm.join_cte_subquery_window_func()
+    # relationship
+    await AsyncOrm.select_workers_joined_relationship()
+    await AsyncOrm.select_workers_selectin_relationship()
+    await AsyncOrm.select_worker_selectin_relationship()
 
 
 if __name__ == "__main__":
