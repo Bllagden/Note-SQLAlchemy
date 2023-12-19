@@ -49,3 +49,41 @@ class AsyncOrm:
             worker = await session.get(WorkersOrm, worker_id)
             worker.username = new_username  # type: ignore
             await session.commit()
+
+    @staticmethod
+    async def insert_resumes():
+        async with async_session_factory() as session:
+            print()
+            worker_1_resume_1 = ResumesOrm(
+                title="Python Junior Developer",
+                compensation=50000,
+                workload=Workload.fulltime,
+                worker_id=1,
+            )
+            worker_1_resume_2 = ResumesOrm(
+                title="Python Разработчик",
+                compensation=150000,
+                workload=Workload.fulltime,
+                worker_id=1,
+            )
+            worker_2_resume_1 = ResumesOrm(
+                title="Python Data Engineer",
+                compensation=250000,
+                workload=Workload.parttime,
+                worker_id=2,
+            )
+            worker_2_resume_2 = ResumesOrm(
+                title="Data Scientist",
+                compensation=300000,
+                workload=Workload.fulltime,
+                worker_id=2,
+            )
+            session.add_all(
+                [
+                    worker_1_resume_1,
+                    worker_1_resume_2,
+                    worker_2_resume_1,
+                    worker_2_resume_2,
+                ]
+            )
+            await session.commit()

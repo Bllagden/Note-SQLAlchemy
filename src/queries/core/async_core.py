@@ -66,3 +66,37 @@ class AsyncCore:
             )
             await conn.execute(stmt)
             await conn.commit()
+
+    @staticmethod
+    async def insert_resumes():
+        async with async_engine.connect() as conn:
+            print()
+            resumes = [
+                {
+                    "title": "Python Junior Developer",
+                    "compensation": 50000,
+                    "workload": Workload.fulltime,
+                    "worker_id": 1,
+                },
+                {
+                    "title": "Python Разработчик",
+                    "compensation": 150000,
+                    "workload": Workload.fulltime,
+                    "worker_id": 1,
+                },
+                {
+                    "title": "Python Data Engineer",
+                    "compensation": 250000,
+                    "workload": Workload.parttime,
+                    "worker_id": 2,
+                },
+                {
+                    "title": "Data Scientist",
+                    "compensation": 300000,
+                    "workload": Workload.fulltime,
+                    "worker_id": 2,
+                },
+            ]
+            stmt = insert(resumes_tab).values(resumes)
+            await conn.execute(stmt)
+            await conn.commit()

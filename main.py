@@ -17,6 +17,7 @@ def sync_core_main():
     SyncCore.select_workers()
     SyncCore.update_worker_1()
     SyncCore.update_worker_2()
+    SyncCore.insert_resumes()
 
 
 async def async_core_main():
@@ -27,6 +28,7 @@ async def async_core_main():
     await AsyncCore.select_workers()
     await AsyncCore.update_worker_1()
     await AsyncCore.update_worker_2()
+    await AsyncCore.insert_resumes()
 
 
 def sync_orm_main():
@@ -36,6 +38,7 @@ def sync_orm_main():
     SyncOrm.insert_workers(["AAA", "BBB"])
     SyncOrm.select_workers()
     SyncOrm.update_worker_1()
+    SyncOrm.insert_resumes()
 
 
 async def async_orm_main():
@@ -45,6 +48,7 @@ async def async_orm_main():
     await AsyncOrm.insert_workers(["AAA", "BBB"])
     await AsyncOrm.select_workers()
     await AsyncOrm.update_worker_1()
+    await AsyncOrm.insert_resumes()
 
 
 if __name__ == "__main__":
