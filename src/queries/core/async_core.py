@@ -24,3 +24,14 @@ class AsyncCore:
         async with async_engine.begin() as conn:
             print()
             await conn.run_sync(metadata_imp.create_all)
+
+    @staticmethod
+    async def insert_workers(workers: list[str]):
+        """statement: общий термин для любого запроса;
+        query: извлечение данныз из БД (обычно SELECT)."""
+        async with async_engine.connect() as conn:
+            print()
+            values = [{"username": name} for name in workers]
+            stmt = insert(workers_tab).values(values)
+            await conn.execute(stmt)
+            await conn.commit()

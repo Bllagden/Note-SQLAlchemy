@@ -17,3 +17,13 @@ class SyncOrm:
     def create_tables():
         print()
         Base.metadata.create_all(engine)
+
+    @staticmethod
+    def insert_workers(workers: list[str]):
+        with session_factory() as session:
+            print()
+            for name in workers:
+                new_worker = WorkersOrm(username=name)
+                session.add(new_worker)
+                # session.add_all([new_worker, ...])
+            session.commit()

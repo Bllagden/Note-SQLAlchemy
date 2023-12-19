@@ -13,24 +13,28 @@ def sync_core_main():
     print("\nSync Core\n")
     SyncCore.delete_tables()
     SyncCore.create_tables()
+    SyncCore.insert_workers(["AAA", "BBB"])
 
 
 async def async_core_main():
     print("\nAsync Core\n")
     await AsyncCore.delete_tables()
     await AsyncCore.create_tables()
+    await AsyncCore.insert_workers(["AAA", "BBB"])
 
 
 def sync_orm_main():
     print("\nSync Orm\n")
     SyncOrm.delete_tables()
     SyncOrm.create_tables()
+    SyncOrm.insert_workers(["AAA", "BBB"])
 
 
 async def async_orm_main():
     print("\nAsync Orm\n")
     await AsyncOrm.delete_tables()
     await AsyncOrm.create_tables()
+    await AsyncOrm.insert_workers(["AAA", "BBB"])
 
 
 if __name__ == "__main__":

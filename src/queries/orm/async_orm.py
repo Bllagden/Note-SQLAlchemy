@@ -19,3 +19,13 @@ class AsyncOrm:
         async with async_engine.begin() as conn:
             print()
             await conn.run_sync(Base.metadata.create_all)
+
+    @staticmethod
+    async def insert_workers(workers: list[str]):
+        async with async_session_factory() as session:
+            print()
+            for name in workers:
+                new_worker = WorkersOrm(username=name)
+                session.add(new_worker)
+                # session.add_all([new_worker, ...])
+            await session.commit()

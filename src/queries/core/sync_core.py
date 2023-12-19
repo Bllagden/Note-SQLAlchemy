@@ -22,3 +22,26 @@ class SyncCore:
     def create_tables():
         print()
         metadata_imp.create_all(engine)
+
+    @staticmethod
+    def insert_workers(workers: list[str]):
+        """statement: общий термин для любого запроса;
+        query: извлечение данныз из БД (обычно SELECT)."""
+        with engine.connect() as conn:
+            print()
+            # stmt = """INSERT INTO workers (username) VALUES
+            #             ('AAA'),
+            #             ('BBB');"""
+            # conn.execute(text(stmt))
+
+            # stmt = insert(workers_tab).values(
+            #     [
+            #         {"username": "AAA"},
+            #         {"username": "BBB"},
+            #     ]
+            # )
+
+            values = [{"username": name} for name in workers]
+            stmt = insert(workers_tab).values(values)
+            conn.execute(stmt)
+            conn.commit()
