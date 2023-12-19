@@ -18,6 +18,7 @@ def sync_core_main():
     SyncCore.update_worker_1()
     SyncCore.update_worker_2()
     SyncCore.insert_resumes()
+    SyncCore.select_resumes_avg_compensation()
 
 
 async def async_core_main():
@@ -29,6 +30,7 @@ async def async_core_main():
     await AsyncCore.update_worker_1()
     await AsyncCore.update_worker_2()
     await AsyncCore.insert_resumes()
+    await AsyncCore.select_resumes_avg_compensation()
 
 
 def sync_orm_main():
@@ -39,6 +41,7 @@ def sync_orm_main():
     SyncOrm.select_workers()
     SyncOrm.update_worker_1()
     SyncOrm.insert_resumes()
+    SyncOrm.select_resumes_avg_compensation()
 
 
 async def async_orm_main():
@@ -49,6 +52,7 @@ async def async_orm_main():
     await AsyncOrm.select_workers()
     await AsyncOrm.update_worker_1()
     await AsyncOrm.insert_resumes()
+    await AsyncOrm.select_resumes_avg_compensation()
 
 
 if __name__ == "__main__":

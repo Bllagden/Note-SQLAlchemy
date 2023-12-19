@@ -88,3 +88,37 @@ class SyncOrm:
                 ]
             )
             session.commit()
+
+    @staticmethod
+    def select_resumes_avg_compensation(like_language: str = "Python"):
+        """
+        SELECT workload, AVG(compensation)::INT AS avg_compensation
+        FROM resumes
+        WHERE title LIKE '%Python%' AND compensation > 40000
+        GROUP BY workload
+        HAVING AVG(compensation) > 70000
+        """
+        with session_factory() as session:
+            print()
+            query = (
+                select(
+                    ResumesOrm.workload,
+                    func.avg(ResumesOrm.compensation)
+                    .cast(Integer)
+                    .label("avg_compensation"),
+                )
+                .select_from(ResumesOrm)
+                .filter(
+                    and_(
+                        ResumesOrm.title.contains(like_language),
+                        ResumesOrm.compensation > 40000,
+                    )
+                )
+                .group_by(ResumesOrm.workload)
+                .having(func.avg(ResumesOrm.compensation) > 70000)
+            )
+            print(query.compile(compile_kwargs={"literal_binds": True}))
+            res = session.execute(query)
+            result = res.all()
+            print(result)
+            print(result[0].avg_compensation)

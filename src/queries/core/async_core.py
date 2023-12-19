@@ -100,3 +100,37 @@ class AsyncCore:
             stmt = insert(resumes_tab).values(resumes)
             await conn.execute(stmt)
             await conn.commit()
+
+    @staticmethod
+    async def select_resumes_avg_compensation(like_language: str = "Python"):
+        """
+        SELECT workload, AVG(compensation)::INT AS avg_compensation
+        FROM resumes
+        WHERE title LIKE '%Python%' AND compensation > 40000
+        GROUP BY workload
+        HAVING AVG(compensation) > 70000
+        """
+        async with async_engine.connect() as conn:
+            print()
+            query = (
+                select(
+                    resumes_tab.c.workload,
+                    func.avg(resumes_tab.c.compensation)
+                    .cast(Integer)
+                    .label("avg_compensation"),
+                )
+                .select_from(resumes_tab)
+                .filter(
+                    and_(
+                        resumes_tab.c.title.contains(like_language),
+                        resumes_tab.c.compensation > 40000,
+                    )
+                )
+                .group_by(resumes_tab.c.workload)
+                .having(func.avg(resumes_tab.c.compensation) > 70000)
+            )
+            print(query.compile(compile_kwargs={"literal_binds": True}))
+            res = await conn.execute(query)
+            result = res.all()
+            print(result)
+            print(result[0].avg_compensation)
