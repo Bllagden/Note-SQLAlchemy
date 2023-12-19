@@ -172,3 +172,61 @@ class SyncOrm:
     # session.flush() - синхронизирует состояние сессии с БД не завершая транзакцию
     # session.expire() - делает текущие данные объекта устаревшими
     # session.refresh() - немедленно загружает свежие данные из БД
+
+    @staticmethod
+    def join_cte_subquery_window_func():
+        """
+        WITH helper2 AS (
+            SELECT *, compensation-avg_workload_compensation AS compensation_diff
+            FROM
+            (SELECT
+                w.id,
+                w.username,
+                r.compensation,
+                r.workload,
+                avg(r.compensation) OVER (PARTITION BY workload)::INT AS avg_workload_compensation
+            FROM resumes r
+            JOIN workers w ON r.worker_id = w.id) helper1
+        )
+        SELECT * FROM helper2
+        ORDER BY compensation_diff DESC;
+
+        CTE - временные именованные результаты запросов (helper1, helper2).
+
+        Оконная функция - avg(r.compensation) OVER (PARTITION BY workload)::INT AS avg...
+        Выполняет вычисления для каждого подмножества строк.
+        В данном случае считает среднее compensation для разных workload (part, full).
+        """
+        with session_factory() as session:
+            print()
+            r = aliased(ResumesOrm)
+            w = aliased(WorkersOrm)
+            subq = (
+                select(
+                    r,
+                    w,
+                    func.avg(r.compensation)  # type: ignore
+                    .over(partition_by=r.workload)
+                    .cast(Integer)
+                    .label("avg_workload_compensation"),
+                )
+                .select_from(r)  # можно не указывать (алхимия поймет)
+                .join(w, r.worker_id == w.id)
+                .subquery("helper1")
+            )
+            cte = select(
+                subq.c.worker_id,
+                subq.c.username,
+                subq.c.compensation,
+                subq.c.workload,
+                subq.c.avg_workload_compensation,
+                (subq.c.compensation - subq.c.avg_workload_compensation).label(
+                    "compensation_diff"
+                ),
+            ).cte("helper2")
+            query = select(cte).order_by(cte.c.compensation_diff.desc())
+
+            res = session.execute(query)
+            result = res.all()
+            print()
+            print(f"{len(result)=}\n{result=}")

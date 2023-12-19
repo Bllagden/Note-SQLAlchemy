@@ -45,6 +45,8 @@ def sync_orm_main():
     SyncOrm.insert_resumes()
     SyncOrm.select_resumes_avg_compensation()
     SyncOrm.insert_additional_resumes()
+    # end core
+    SyncOrm.join_cte_subquery_window_func()
 
 
 async def async_orm_main():
@@ -57,6 +59,8 @@ async def async_orm_main():
     await AsyncOrm.insert_resumes()
     await AsyncOrm.select_resumes_avg_compensation()
     await AsyncOrm.insert_additional_resumes()
+    # end core
+    await AsyncOrm.join_cte_subquery_window_func()
 
 
 if __name__ == "__main__":
