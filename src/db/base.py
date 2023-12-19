@@ -45,3 +45,10 @@ class Base(DeclarativeBase):
         str_255: String(255),
         enum.Enum: Enum(native_enum=False),
     }
+
+    def __repr__(self):
+        """Relationships не используются в repr(), т.к. могут вести к неожиданным подгрузкам"""
+        cols = []
+        for col in self.__table__.columns.keys():
+            cols.append(f"{col}={getattr(self, col)}")  # type: ignore
+        return f"<{self.__class__.__name__}: {', '.join(cols)}>"
