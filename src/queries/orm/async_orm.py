@@ -121,3 +121,53 @@ class AsyncOrm:
             result = res.all()
             print(result)
             print(result[0].avg_compensation)
+
+    @staticmethod
+    async def insert_additional_resumes():
+        async with async_session_factory() as session:
+            print()
+            worker_3 = WorkersOrm(username="Artem")  # id 3
+            worker_4 = WorkersOrm(username="Roman")  # id 4
+            worker_5 = WorkersOrm(username="Petr")  # id 5
+
+            resume_5 = ResumesOrm(
+                title="Python программист",
+                compensation=60000,
+                workload="fulltime",
+                worker_id=3,
+            )
+            resume_6 = ResumesOrm(
+                title="Machine Learning Engineer",
+                compensation=70000,
+                workload="parttime",
+                worker_id=3,
+            )
+            resume_7 = ResumesOrm(
+                title="Python Data Scientist",
+                compensation=80000,
+                workload="parttime",
+                worker_id=4,
+            )
+            resume_8 = ResumesOrm(
+                title="Python Analyst",
+                compensation=90000,
+                workload="fulltime",
+                worker_id=4,
+            )
+            resume_9 = ResumesOrm(
+                title="Python Junior Developer",
+                compensation=100000,
+                workload="fulltime",
+                worker_id=5,
+            )
+            data_workers = [worker_3, worker_4, worker_5]
+            session.add_all(data_workers)
+            await session.flush()  # иначе не получается вставить резюме, ведь воркеров еще нет
+
+            data_resumes = [resume_5, resume_6, resume_7, resume_8, resume_9]
+            session.add_all(data_resumes)
+            await session.commit()
+
+    # session.flush() - синхронизирует состояние сессии с БД не завершая транзакцию
+    # session.expire() - делает текущие данные объекта устаревшими
+    # session.refresh() - немедленно загружает свежие данные из БД
