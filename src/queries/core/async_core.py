@@ -35,3 +35,12 @@ class AsyncCore:
             stmt = insert(workers_tab).values(values)
             await conn.execute(stmt)
             await conn.commit()
+
+    @staticmethod
+    async def select_workers():
+        async with async_engine.connect() as conn:
+            print()
+            query = select(workers_tab)  # SELECT * FROM workers
+            res = await conn.execute(query)
+            workers = res.all()
+            print(f"{workers=}")  # [(1, 'AAA'), (2, 'BBB')]

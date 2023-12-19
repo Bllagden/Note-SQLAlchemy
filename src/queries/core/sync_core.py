@@ -45,3 +45,12 @@ class SyncCore:
             stmt = insert(workers_tab).values(values)
             conn.execute(stmt)
             conn.commit()
+
+    @staticmethod
+    def select_workers():
+        with engine.connect() as conn:
+            print()
+            query = select(workers_tab)  # SELECT * FROM workers
+            res = conn.execute(query)
+            workers = res.all()
+            print(f"{workers=}")  # [(1, 'AAA'), (2, 'BBB')]

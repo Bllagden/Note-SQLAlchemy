@@ -29,3 +29,13 @@ class AsyncOrm:
                 session.add(new_worker)
                 # session.add_all([new_worker, ...])
             await session.commit()
+
+    @staticmethod
+    async def select_workers():
+        async with async_session_factory() as session:
+            print()
+            query = select(WorkersOrm)  # SELECT * FROM workers
+            res = await session.execute(query)
+            # workers = res.all()  # list[tuple[IterOrm]]
+            workers = res.scalars().all()  # list[IterOrm]
+            print(f"{workers=}")

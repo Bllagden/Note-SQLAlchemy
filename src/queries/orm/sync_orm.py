@@ -27,3 +27,16 @@ class SyncOrm:
                 session.add(new_worker)
                 # session.add_all([new_worker, ...])
             session.commit()
+
+    @staticmethod
+    def select_workers():
+        with session_factory() as session:
+            print()
+            # worker_id = 1
+            # worker = session.get(WorkersOrm, worker_id)
+
+            query = select(WorkersOrm)  # SELECT * FROM workers
+            res = session.execute(query)
+            # workers = res.all()  # list[tuple[IterOrm]]
+            workers = res.scalars().all()  # list[IterOrm]
+            print(f"{workers=}")
