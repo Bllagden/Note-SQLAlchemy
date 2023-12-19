@@ -34,7 +34,12 @@ async def async_orm_main():
 
 
 if __name__ == "__main__":
-    # sync_core_main()
-    # asyncio.run(async_core_main())
-    # sync_orm_main()
-    asyncio.run(async_orm_main())
+    """python main.py --sync --orm"""
+    if "--sync" in sys.argv and "--core" in sys.argv:
+        sync_core_main()
+    elif "--async" in sys.argv and "--core" in sys.argv:
+        asyncio.run(async_core_main())
+    elif "--sync" in sys.argv and "--orm" in sys.argv:
+        sync_orm_main()
+    elif "--async" in sys.argv and "--orm" in sys.argv:
+        asyncio.run(async_orm_main())
