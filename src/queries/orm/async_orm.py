@@ -7,4 +7,15 @@ from db.models import ResumesOrm, WorkersOrm, Workload
 
 
 class AsyncOrm:
-    pass
+    @staticmethod
+    async def delete_tables():
+        async with async_engine.begin() as conn:
+            async_engine.echo = False
+            await conn.run_sync(Base.metadata.drop_all)
+            async_engine.echo = True
+
+    @staticmethod
+    async def create_tables():
+        async with async_engine.begin() as conn:
+            print()
+            await conn.run_sync(Base.metadata.create_all)

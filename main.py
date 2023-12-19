@@ -10,20 +10,31 @@ from queries import AsyncCore, AsyncOrm, SyncCore, SyncOrm  # noqa: E402
 
 
 def sync_core_main():
-    pass
+    print("\nSync Core\n")
+    SyncCore.delete_tables()
+    SyncCore.create_tables()
 
 
 async def async_core_main():
-    pass
+    print("\nAsync Core\n")
+    await AsyncCore.delete_tables()
+    await AsyncCore.create_tables()
 
 
 def sync_orm_main():
-    pass
+    print("\nSync Orm\n")
+    SyncOrm.delete_tables()
+    SyncOrm.create_tables()
 
 
 async def async_orm_main():
-    pass
+    print("\nAsync Orm\n")
+    await AsyncOrm.delete_tables()
+    await AsyncOrm.create_tables()
 
 
 if __name__ == "__main__":
-    pass
+    # sync_core_main()
+    # asyncio.run(async_core_main())
+    # sync_orm_main()
+    asyncio.run(async_orm_main())

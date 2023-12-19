@@ -7,4 +7,13 @@ from db.models import ResumesOrm, WorkersOrm, Workload
 
 
 class SyncOrm:
-    pass
+    @staticmethod
+    def delete_tables():
+        engine.echo = False
+        Base.metadata.drop_all(engine)
+        engine.echo = True
+
+    @staticmethod
+    def create_tables():
+        print()
+        Base.metadata.create_all(engine)
