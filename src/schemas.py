@@ -7,7 +7,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict  # noqa: F401
 
 from db.models import Workload
 
@@ -48,15 +48,18 @@ class WorkersRelDTO(WorkersDTO):
 
 
 class WorkloadAvgCompensationDTO(BaseModel):
+    """from_attributes=True - сериализация данных в модель Pydantic для orm объектов
+    (обращение к атрибутам через точку, а не по ключам словаря)."""
+
     workload: Workload
     avg_compensation: int
 
-    class Config:
-        """from_attributes=True - сериализация данных в модель Pydantic для orm объектов
-        (обращение к атрибутам через точку, а не по ключам словаря)."""
+    # новый способ
+    # model_config = ConfigDict(from_attributes=True)
 
-        #    from_attributes = True
-        pass
+    # старый способ
+    # class Config:
+    #   from_attributes = True
 
 
 ################################### M_to_M ###################################
